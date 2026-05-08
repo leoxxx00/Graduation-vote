@@ -1,195 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendance Voting System</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
-      background: #f4f4f4;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Voting System</title>
 
-    h1, h2 {
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #f4f4f4;
+}
 
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
 
-    input, select, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      font-size: 16px;
-    }
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  font-size: 16px;
+}
 
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-    button:hover {
-      background: #0056b3;
-    }
+.admin-btn {
+  background: #222;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
 
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
 
-    th {
-      background: #007bff;
-      color: white;
-    }
+th {
+  background: #007bff;
+  color: white;
+}
 
-    .totals {
-      margin-top: 20px;
-      padding: 15px;
-      background: #eef;
-      border-radius: 8px;
-    }
-  </style>
+.hidden {
+  display: none;
+}
+
+.totals {
+  margin-top: 20px;
+  padding: 15px;
+  background: #eef;
+  border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="container">
-  <h1>Attendance Voting System</h1>
+  <h1>Attendance Vote</h1>
 
-  <label>Name:</label>
-  <input type="text" id="name" placeholder="Enter your name">
+  <div id="voteMode">
+    <h2>Vote Mode</h2>
 
-  <label>Task / What are you doing?</label>
-  <input type="text" id="task" placeholder="Enter your task">
+    <label>Name:</label>
+    <input type="text" id="name" placeholder="Enter your name">
 
-  <label>Attendance Status:</label>
-  <select id="vote">
-    <option value="Attending Surely">Attending Surely</option>
-    <option value="Attending But">Attending But</option>
-    <option value="Will Attend Not Sure">Will Attend Not Sure</option>
-  </select>
+    <label>Task / What are you doing?</label>
+    <input type="text" id="task" placeholder="Enter your task">
 
-  <button onclick="submitVote()">Submit Vote</button>
-  <button onclick="downloadCSV()">Download Final CSV</button>
+    <label>Attendance Status:</label>
+    <select id="vote">
+      <option value="Attending Surely">Attending Surely</option>
+      <option value="Attending But">Attending But</option>
+      <option value="Will Attend Not Sure">Will Attend Not Sure</option>
+      <option value="Not Attending">Not Attending</option>
+    </select>
 
-  <h2>Attendance List</h2>
+    <button onclick="submitVote()">Submit Vote</button>
+    <button class="admin-btn" onclick="showAdminLogin()">Admin Mode</button>
+  </div>
 
-  <table id="attendanceTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Task</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="adminLogin" class="hidden">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter admin password">
+    <button onclick="loginAdmin()">Login</button>
+    <button onclick="backToVote()">Back to Vote</button>
+  </div>
 
-  <div class="totals">
-    <h2>Final Totals</h2>
-    <p>Attending Surely: <span id="surelyCount">0</span></p>
-    <p>Attending But: <span id="butCount">0</span></p>
-    <p>Will Attend Not Sure: <span id="notSureCount">0</span></p>
+  <div id="adminMode" class="hidden">
+    <h2>Admin Mode</h2>
+
+    <button onclick="downloadCSV()">Download Final CSV</button>
+    <button onclick="clearAllData()">Clear All Votes</button>
+    <button onclick="backToVote()">Back to Vote Mode</button>
+
+    <h2>Attendance List</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Task</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody"></tbody>
+    </table>
+
+    <div class="totals">
+      <h2>Final Totals</h2>
+      <p>Attending Surely: <span id="surelyCount">0</span></p>
+      <p>Attending But: <span id="butCount">0</span></p>
+      <p>Will Attend Not Sure: <span id="notSureCount">0</span></p>
+      <p>Not Attending: <span id="notAttendingCount">0</span></p>
+    </div>
   </div>
 </div>
 
 <script>
-  let attendanceData = [];
+const ADMIN_PASSWORD = "pirsquareh";
+
+let attendanceData = JSON.parse(localStorage.getItem("attendanceData")) || [];
+
+function saveData() {
+  localStorage.setItem("attendanceData", JSON.stringify(attendanceData));
+}
+
+function submitVote() {
+  const name = document.getElementById("name").value.trim();
+  const task = document.getElementById("task").value.trim();
+  const vote = document.getElementById("vote").value;
+
+  if (!name || !task) {
+    alert("Please enter both name and task.");
+    return;
+  }
+
+  attendanceData.push({
+    name: name,
+    task: task,
+    vote: vote
+  });
+
+  saveData();
+
+  alert("Vote submitted successfully.");
+
+  document.getElementById("name").value = "";
+  document.getElementById("task").value = "";
+}
+
+function showAdminLogin() {
+  document.getElementById("voteMode").classList.add("hidden");
+  document.getElementById("adminLogin").classList.remove("hidden");
+}
+
+function loginAdmin() {
+  const password = document.getElementById("adminPassword").value;
+
+  if (password === ADMIN_PASSWORD) {
+    document.getElementById("adminLogin").classList.add("hidden");
+    document.getElementById("adminMode").classList.remove("hidden");
+    updateAdminView();
+  } else {
+    alert("Wrong password.");
+  }
+}
+
+function backToVote() {
+  document.getElementById("adminLogin").classList.add("hidden");
+  document.getElementById("adminMode").classList.add("hidden");
+  document.getElementById("voteMode").classList.remove("hidden");
+}
+
+function updateAdminView() {
+  const tbody = document.getElementById("attendanceBody");
+  tbody.innerHTML = "";
 
   let totals = {
     "Attending Surely": 0,
     "Attending But": 0,
-    "Will Attend Not Sure": 0
+    "Will Attend Not Sure": 0,
+    "Not Attending": 0
   };
 
-  function submitVote() {
-    const name = document.getElementById("name").value.trim();
-    const task = document.getElementById("task").value.trim();
-    const vote = document.getElementById("vote").value;
+  attendanceData.forEach(entry => {
+    totals[entry.vote]++;
 
-    if (!name || !task) {
-      alert("Please enter both name and task.");
-      return;
-    }
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${entry.name}</td>
+      <td>${entry.task}</td>
+      <td>${entry.vote}</td>
+    `;
+    tbody.appendChild(row);
+  });
 
-    attendanceData.push({
-      name: name,
-      task: task,
-      vote: vote
-    });
+  document.getElementById("surelyCount").textContent = totals["Attending Surely"];
+  document.getElementById("butCount").textContent = totals["Attending But"];
+  document.getElementById("notSureCount").textContent = totals["Will Attend Not Sure"];
+  document.getElementById("notAttendingCount").textContent = totals["Not Attending"];
+}
 
-    totals[vote]++;
+function downloadCSV() {
+  let csv = "Name,Task,Attendance Status\n";
 
-    updateTable();
-    updateTotals();
+  attendanceData.forEach(entry => {
+    csv += `"${entry.name}","${entry.task}","${entry.vote}"\n`;
+  });
 
-    document.getElementById("name").value = "";
-    document.getElementById("task").value = "";
+  const totals = {
+    "Attending Surely": 0,
+    "Attending But": 0,
+    "Will Attend Not Sure": 0,
+    "Not Attending": 0
+  };
+
+  attendanceData.forEach(entry => {
+    totals[entry.vote]++;
+  });
+
+  csv += "\nFinal Totals\n";
+  csv += `"Attending Surely",${totals["Attending Surely"]}\n`;
+  csv += `"Attending But",${totals["Attending But"]}\n`;
+  csv += `"Will Attend Not Sure",${totals["Will Attend Not Sure"]}\n`;
+  csv += `"Not Attending",${totals["Not Attending"]}\n`;
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "attendance_votes.csv";
+  a.click();
+
+  window.URL.revokeObjectURL(url);
+}
+
+function clearAllData() {
+  if (confirm("Are you sure you want to clear all votes?")) {
+    attendanceData = [];
+    saveData();
+    updateAdminView();
   }
-
-  function updateTable() {
-    const tbody = document.querySelector("#attendanceTable tbody");
-    tbody.innerHTML = "";
-
-    attendanceData.forEach(entry => {
-      const row = `
-        <tr>
-          <td>${entry.name}</td>
-          <td>${entry.task}</td>
-          <td>${entry.vote}</td>
-        </tr>
-      `;
-      tbody.innerHTML += row;
-    });
-  }
-
-  function updateTotals() {
-    document.getElementById("surelyCount").textContent = totals["Attending Surely"];
-    document.getElementById("butCount").textContent = totals["Attending But"];
-    document.getElementById("notSureCount").textContent = totals["Will Attend Not Sure"];
-  }
-
-  function downloadCSV() {
-    let csv = "Name,Task,Attendance Status\n";
-
-    attendanceData.forEach(entry => {
-      csv += `"${entry.name}","${entry.task}","${entry.vote}"\n`;
-    });
-
-    csv += "\nFinal Totals\n";
-    csv += `"Attending Surely",${totals["Attending Surely"]}\n`;
-    csv += `"Attending But",${totals["Attending But"]}\n`;
-    csv += `"Will Attend Not Sure",${totals["Will Attend Not Sure"]}\n`;
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "attendance_votes.csv";
-    a.click();
-
-    window.URL.revokeObjectURL(url);
-  }
+}
 </script>
 
 </body>
