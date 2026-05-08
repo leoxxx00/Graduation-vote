@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Voting System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    .totals {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eef;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Attendance Voting System</h1>
+
+  <label>Name:</label>
+  <input type="text" id="name" placeholder="Enter your name">
+
+  <label>Task / What are you doing?</label>
+  <input type="text" id="task" placeholder="Enter your task">
+
+  <label>Attendance Status:</label>
+  <select id="vote">
+    <option value="Attending Surely">Attending Surely</option>
+    <option value="Attending But">Attending But</option>
+    <option value="Will Attend Not Sure">Will Attend Not Sure</option>
+  </select>
+
+  <button onclick="submitVote()">Submit Vote</button>
+  <button onclick="downloadCSV()">Download Final CSV</button>
+
+  <h2>Attendance List</h2>
+
+  <table id="attendanceTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Task</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="totals">
+    <h2>Final Totals</h2>
+    <p>Attending Surely: <span id="surelyCount">0</span></p>
+    <p>Attending But: <span id="butCount">0</span></p>
+    <p>Will Attend Not Sure: <span id="notSureCount">0</span></p>
+  </div>
+</div>
+
+<script>
+  let attendanceData = [];
+
+  let totals = {
+    "Attending Surely": 0,
+    "Attending But": 0,
+    "Will Attend Not Sure": 0
+  };
+
+  function submitVote() {
+    const name = document.getElementById("name").value.trim();
+    const task = document.getElementById("task").value.trim();
+    const vote = document.getElementById("vote").value;
+
+    if (!name || !task) {
+      alert("Please enter both name and task.");
+      return;
+    }
+
+    attendanceData.push({
+      name: name,
+      task: task,
+      vote: vote
+    });
+
+    totals[vote]++;
+
+    updateTable();
+    updateTotals();
+
+    document.getElementById("name").value = "";
+    document.getElementById("task").value = "";
+  }
+
+  function updateTable() {
+    const tbody = document.querySelector("#attendanceTable tbody");
+    tbody.innerHTML = "";
+
+    attendanceData.forEach(entry => {
+      const row = `
+        <tr>
+          <td>${entry.name}</td>
+          <td>${entry.task}</td>
+          <td>${entry.vote}</td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+  }
+
+  function updateTotals() {
+    document.getElementById("surelyCount").textContent = totals["Attending Surely"];
+    document.getElementById("butCount").textContent = totals["Attending But"];
+    document.getElementById("notSureCount").textContent = totals["Will Attend Not Sure"];
+  }
+
+  function downloadCSV() {
+    let csv = "Name,Task,Attendance Status\n";
+
+    attendanceData.forEach(entry => {
+      csv += `"${entry.name}","${entry.task}","${entry.vote}"\n`;
+    });
+
+    csv += "\nFinal Totals\n";
+    csv += `"Attending Surely",${totals["Attending Surely"]}\n`;
+    csv += `"Attending But",${totals["Attending But"]}\n`;
+    csv += `"Will Attend Not Sure",${totals["Will Attend Not Sure"]}\n`;
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "attendance_votes.csv";
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  }
+</script>
+
+</body>
+</html>
